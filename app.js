@@ -1100,7 +1100,7 @@ app.post('/Evaluate_Result', async (req, res) => {
         JD = result.Job_Description
 
         // Close the connection
-        await client.close();setTimeout(async ()=>{await client.close();},3000);
+        await client.close();setTimeout(async ()=>{await client.close();},60000);
         
     } catch (error) {
 
@@ -1342,7 +1342,7 @@ if __name__ == "__main__":
             console.log(confidence_rate,communication_rate,relevance_rate,growth_rate)
                 
         }
-        setTimeout(GrowthScore, 20000);
+        setTimeout(GrowthScore, 50000);
 
         async function InsertData(){
 
@@ -1369,7 +1369,7 @@ if __name__ == "__main__":
         
             }
         }
-        setTimeout(InsertData, 25000)
+        setTimeout(InsertData, 54000)
 
 
 });
