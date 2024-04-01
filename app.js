@@ -51,7 +51,6 @@ app.use(bodyParser.json());
 
 
 
-//---------------------- Javascript to python Communicator ------------------------------------- 
 
 app.post('/run-python', async (req, res) => {
     try {
@@ -118,9 +117,6 @@ print(ans)
     }
 });
 
-
-
-//-------------------------------------------------------------------------------
 
 
 
@@ -224,24 +220,20 @@ cron.schedule('* * * * *', () => {
 
 
 
-var login_error = "none";
 
 //route for login
 app.get('/', (req, res) => {
-
-    res.render('index', { login_error });
+    res.render('index', { login_error:req.session.login_error });
 
 });
 
 //logout area 
 app.get('/logout', (req, res) => {
-    login_error = "none";
+    req.session.login_error = "none";
     req.session.destroy(err => {
         res.redirect('/');
     });
 });
-let Candidate_details = {};
-let Recruiter_details = {};
 
 //verifying Candidate Credentials
 app.post('/Candidate_verify', async (req, res) => {
@@ -262,12 +254,12 @@ app.post('/Candidate_verify', async (req, res) => {
 
         if (result) {
             // Credentials matched, set session and redirect
-            Candidate_details = result;
+            req.session.Candidate_details = result;
             req.session.Candidate_userID = Candidate_ID;
             res.redirect('/Candidate_Home');
         } else {
             // Credentials not matched, redirect to login page with error
-            login_error = "error";
+            req.session.login_error = "error";
             res.redirect('/');
         }
     } catch (error) {
@@ -297,12 +289,12 @@ app.post('/Recruiter_verify', async (req, res) => {
 
         if (result) {
             // Credentials matched, set session and redirect
-            Recruiter_details = result;
+            req.session.Recruiter_details = result;
             req.session.Recruiter_userID = Recruiter_ID;
             res.redirect('/Recruiter_Home');
         } else {
             // Credentials not matched, redirect to login page with error
-            login_error = "error";
+            req.session.login_error = "error";
             res.redirect('/');
         }
     } catch (error) {
@@ -316,8 +308,8 @@ app.post('/Recruiter_verify', async (req, res) => {
 app.get('/Candidate_Profile' , async(req,res)=>{
 
     if (req.session.Candidate_userID) {
-        // Render the Candidate_Home view with Candidate_details
-        res.render('Candidate_Profile',{Candidate_details})
+        // Render the Candidate_Home view with req.session.Candidate_details
+        res.render('Candidate_Profile',{Candidate_details:req.session.Candidate_details})
     } else {
         // Redirect to the home page if session is not set
         res.redirect('/');
@@ -339,15 +331,15 @@ app.get('/Candidate_Home', async (req, res) => {
         const collection = db.collection('CandidateProfiles');
 
         // Assuming Candidate_details contains the Candidate_ID and Candidate_Password
-        const result = await collection.findOne({ ID: Candidate_details.ID });
+        const result = await collection.findOne({ ID: req.session.Candidate_details.ID });
         candidate_result = result
         // Close the connection
         await client.close();
 
         if (req.session.Candidate_userID) {
-            // Render the Candidate_Home view with Candidate_details
-            res.render('Candidate_Home', { Candidate_details });
-            login_error = "none";
+            // Render the Candidate_Home view with req.session.Candidate_details
+            res.render('Candidate_Home', { Candidate_details:req.session.Candidate_details });
+            req.session.login_error = "none";
         } else {
             // Redirect to the home page if session is not set
             res.redirect('/');
@@ -377,37 +369,37 @@ app.get('/Candidate_Dashboard', async (req, res) => {
             var collection = db.collection('InterviewLog');
 
             // Access the database and collection
-            var Total_Interviews = await collection.countDocuments({ CandidateID: Candidate_details.ID });
-            var Attended_Interviews = await collection.countDocuments({ CandidateID: Candidate_details.ID, Interview_Response: { $ne: "" } });
-            var  Resulted = await collection.countDocuments({ CandidateID: Candidate_details.ID, Result: { $ne: "" } });
+            var Total_Interviews = await collection.countDocuments({ CandidateID: req.session.Candidate_details.ID });
+            var Attended_Interviews = await collection.countDocuments({ CandidateID: req.session.Candidate_details.ID, Interview_Response: { $ne: "" } });
+            var  Resulted = await collection.countDocuments({ CandidateID: req.session.Candidate_details.ID, Result: { $ne: "" } });
             var Technical = ""
             var Framework = ""
             var Topic  = ""
 
             const Cfd_result = await collection.aggregate([
-                { $match: { CandidateID: Candidate_details.ID } },
+                { $match: { CandidateID: req.session.Candidate_details.ID } },
                 { $group: { _id: null, totalConfidence: { $sum: "$PreResult.Confidence" } } }
             ]).toArray();
     
             const Com_result = await collection.aggregate([
-                { $match: { CandidateID: Candidate_details.ID } },
+                { $match: { CandidateID: req.session.Candidate_details.ID } },
                 { $group: { _id: null, totalCommunication: { $sum: "$PreResult.Communication" } } }
             ]).toArray();
     
             const rele_result = await collection.aggregate([
-                { $match: { CandidateID: Candidate_details.ID } },
+                { $match: { CandidateID: req.session.Candidate_details.ID } },
                 { $group: { _id: null, totalRelevance: { $sum: "$PreResult.Relevance" } } }
             ]).toArray();
     
             const Growth = await collection.aggregate([
-                { $match: { CandidateID: Candidate_details.ID, Result: { $ne: "" } } },
+                { $match: { CandidateID: req.session.Candidate_details.ID, Result: { $ne: "" } } },
                 { $group: { _id: null, totalGrowth: { $sum: "$PreResult.Growth" } } }
             ]).toArray();
 
             const growthArray = await collection.aggregate([
                 {
                     $match: {
-                        CandidateID: Candidate_details.ID,
+                        CandidateID: req.session.Candidate_details.ID,
                         Result: { $ne: "" }
                     }
                 },
@@ -428,14 +420,14 @@ app.get('/Candidate_Dashboard', async (req, res) => {
             for(let i of growthArray)
                 Normalized_Growth.push(i.Growth)
 
-            const test  = await collection.findOne( {CandidateID: Candidate_details.ID, Result: { $ne: "" } })
+            const test  = await collection.findOne( {CandidateID: req.session.Candidate_details.ID, Result: { $ne: "" } })
 
             if(test)
             {
             const T_result = await collection.aggregate([
                 {
                     $match: {
-                        CandidateID: Candidate_details.ID,
+                        CandidateID: req.session.Candidate_details.ID,
                         Result: { $ne: "" }
                     }
                 },
@@ -461,7 +453,7 @@ app.get('/Candidate_Dashboard', async (req, res) => {
             const F_result = await collection.aggregate([
                 {
                     $match: {
-                        CandidateID: Candidate_details.ID,
+                        CandidateID: req.session.Candidate_details.ID,
                         Result: { $ne: "" }
                     }
                 },
@@ -487,7 +479,7 @@ app.get('/Candidate_Dashboard', async (req, res) => {
             const To_result = await collection.aggregate([
                 {
                     $match: {
-                        CandidateID: Candidate_details.ID,
+                        CandidateID: req.session.Candidate_details.ID,
                         Result: { $ne: "" }
                     }
                 },
@@ -540,7 +532,7 @@ app.get('/Candidate_Dashboard', async (req, res) => {
                         const collection = db.collection('CandidateProfiles');
 
                         const result = await collection.updateMany(
-                            { ID: Candidate_details.ID },
+                            { ID: req.session.Candidate_details.ID },
                             { $set: 
                                 { 
                                     Rating : Total_Growth,
@@ -555,7 +547,7 @@ app.get('/Candidate_Dashboard', async (req, res) => {
                                 }
                             }
                         );
-                        const details  = await collection.findOne({ID:Candidate_details.ID})
+                        const details  = await collection.findOne({ID:req.session.Candidate_details.ID})
                         res.render('Candidate_Dashboard', {details,Normalized_Growth });
                     } catch (error) {
                         console.error('Error retrieving data from MongoDB:', error);
@@ -588,7 +580,7 @@ app.get('/Recruiter_Home', (req, res) => {
 
     if (req.session.Recruiter_userID) {
         var ID = req.session.Recruiter_userID;
-        res.render('Recruiter_Home', { Recruiter_details });
+        res.render('Recruiter_Home', { Recruiter_details:req.session.Recruiter_details });
     }
     else {
         res.redirect('/');
@@ -597,8 +589,6 @@ app.get('/Recruiter_Home', (req, res) => {
 });
 
 
-let Interview_API = "";
-let New_Interview_ID = "";
 app.get('/Interview_Creation', async (req, res) => {
 
     // Set cache control headers to prevent caching
@@ -616,15 +606,15 @@ app.get('/Interview_Creation', async (req, res) => {
         const API_result = await API_collection.findOne({ status: "free" });
 
         //creating new interview ID
-        New_Interview_ID = new ObjectId();
-        New_Interview_ID = New_Interview_ID.toString();
+        req.session.New_Interview_ID = new ObjectId();
+        req.session.New_Interview_ID = req.session.New_Interview_ID.toString();
         var API_Vacancy = "";
         if (API_result) {
             const result = await API_collection.updateOne(
                 { status: "free", API: API_result.API },
                 { $set: { status: "taken" } }
             );
-            Interview_API = API_result.API;
+            req.session.Interview_API = API_result.API;
 
         }
         if (!API_result) {
@@ -633,7 +623,7 @@ app.get('/Interview_Creation', async (req, res) => {
 
         if (req.session.Recruiter_userID) {
             var ID = req.session.Recruiter_userID;
-            res.render('Interview_Creation', { Recruiter_details, New_Interview_ID, API_Vacancy });
+            res.render('Interview_Creation', { Recruiter_details:req.session.Recruiter_details, New_Interview_ID:req.session.New_Interview_ID, API_Vacancy });
         }
         else {
             res.redirect('/');
@@ -654,7 +644,7 @@ const seconds = currentTime.getSeconds().toString().padStart(2, '0');
 const current_time = `${hours}:${minutes}:${seconds}`;
 
 app.post('/Creation_Handling', async (req, res) => {
-    var Interview_Link = "https://darwinview.daily.co/" + Interview_API;
+    var Interview_Link = "https://darwinview.daily.co/" + req.session.Interview_API;
     const { Interview_ID, Role, Recruiter_Name, Interview_Title, Interview_Date, Interview_Start, Interview_End, Candidate_Email, Candidate_CID, JD } = req.body;
     const responseData = {
         Role,
@@ -681,13 +671,13 @@ app.post('/Creation_Handling', async (req, res) => {
 
 
         // Insert a single document into the collection
-        const document = { InterviewID: `IID${New_Interview_ID}`, CandidateID: Candidate_CID, RecruiterID: Recruiter_details.ID, RecruiterName: Recruiter_Name, Details: responseData, Candidate_Details: candidate_result, Job_Description: JD, Result: "", status: "Upcoming", created_on: formattedDate, created_at: current_time, Interview_Response: "" };
+        const document = { InterviewID: `IID${req.session.New_Interview_ID}`, CandidateID: Candidate_CID, RecruiterID: req.session.Recruiter_details.ID, RecruiterName: Recruiter_Name, Details: responseData, Candidate_Details: candidate_result, Job_Description: JD, Result: "", status: "Upcoming", created_on: formattedDate, created_at: current_time, Interview_Response: "" };
         const result = await collection.insertOne(document);
 
         const API_collection = db.collection("DailyAPI");
         const API_result = await API_collection.updateOne(
-            { API: Interview_API },
-            { $set: { RecruiterID: Recruiter_details.ID, CandidateID: Candidate_CID, InterviewDate: Interview_Date, InterviewID: `IID${New_Interview_ID}` } }
+            { API: req.session.Interview_API },
+            { $set: { RecruiterID: req.session.Recruiter_details.ID, CandidateID: Candidate_CID, InterviewDate: Interview_Date, InterviewID: `IID${req.session.New_Interview_ID}` } }
         );
 
         const can_collection = db.collection('CandidateProfiles');
@@ -730,7 +720,7 @@ app.post('/Creation_Handling', async (req, res) => {
 
         const html = `
 
-        <p> Interview ID: ${New_Interview_ID} </p>
+        <p> Interview ID: ${req.session.New_Interview_ID} </p>
         <p>Hi, ${candidate_result.Name} </p> 
 
         <p>Thank you for applying to the position <b>${Role} </b> . Here are the details attached for more brief about the interview.</p>
@@ -749,9 +739,9 @@ app.post('/Creation_Handling', async (req, res) => {
         <br><br><br>
         <p> Best Regards,</p>
         <p> ${Recruiter_Name} </p>
-        <p> ${Recruiter_details.Role} </p>
-        <p> ${Recruiter_details.Company} </p>
-        <P> Contact Recruiter: ${Recruiter_details.Email}</p>
+        <p> ${req.session.Recruiter_details.Role} </p>
+        <p> ${req.session.Recruiter_details.Company} </p>
+        <P> Contact Recruiter: ${req.session.Recruiter_details.Email}</p>
         <small>The information contained in this electronic message and any attachments to this message are intended for the exclusive use of the addressee(s) and may contain proprietary, confidential or privileged information. If you are not the intended recipient, you should not disseminate, distribute, or copy this e-mail. Please notify the sender immediately and destroy all copies of this message and any attachments. WARNING: The recipient of this email should scan this email and all its attachments. Though we are secure, emails can be intercepted, lost, destroyed, corrupted, contain viruses, or arrive late or incomplete. The sender does not accept liability for any errors or omissions in the contents of this message, which arise because of the email transmission. </small>
         `;
 
@@ -773,7 +763,7 @@ app.post('/Creation_Handling', async (req, res) => {
 
         //-------------------------- Sending invitation via mail to the candidate Ends -------------------------------------------
 
-        Interview_API = "";
+        req.session.Interview_API = "";
         // Close the connection
         await client.close();
 
@@ -808,13 +798,13 @@ app.get('/Candidate_Log', async (req, res) => {
         await client.connect();
 
         const collection = db.collection("InterviewLog");
-        const cursor = collection.find({ CandidateID: Candidate_details.ID }).sort({ "Details.Interview_Date": -1 });
+        const cursor = collection.find({ CandidateID: req.session.Candidate_details.ID }).sort({ "Details.Interview_Date": -1 });
 
         if (req.session.Candidate_userID) {
             var ID = req.session.Candidate_userID;
             const result = await cursor.toArray();
 
-            res.render('Candidate_Log', { Candidate_details, Candidate_currentMonth, Candidate_currentYear, result, Candidate_currentDayofMonth, Candidate_currentMonthName, Candidate_formattedDate });
+            res.render('Candidate_Log', {Candidate_details: req.session.Candidate_details, Candidate_currentMonth, Candidate_currentYear, result, Candidate_currentDayofMonth, Candidate_currentMonthName, Candidate_formattedDate });
         }
         else {
             res.redirect('/');
@@ -857,9 +847,9 @@ app.get('/Schedule_Log', async (req, res) => {
         await client.connect();
 
         const collection = db.collection("InterviewLog");
-        var Upcoming = collection.find({ RecruiterID: Recruiter_details.ID, status: "Upcoming" }).sort({ "Details.Interview_Date": -1 });
-        var Completed = collection.find({ RecruiterID: Recruiter_details.ID, status: "Completed" }).sort({ "Details.Interview_Date": -1 });
-        var Abandoned = collection.find({ RecruiterID: Recruiter_details.ID, status: "Abandoned" }).sort({ "Details.Interview_Date": -1 });
+        var Upcoming = collection.find({ RecruiterID: req.session.Recruiter_details.ID, status: "Upcoming" }).sort({ "Details.Interview_Date": -1 });
+        var Completed = collection.find({ RecruiterID: req.session.Recruiter_details.ID, status: "Completed" }).sort({ "Details.Interview_Date": -1 });
+        var Abandoned = collection.find({ RecruiterID: req.session.Recruiter_details.ID, status: "Abandoned" }).sort({ "Details.Interview_Date": -1 });
 
 
 
@@ -868,7 +858,7 @@ app.get('/Schedule_Log', async (req, res) => {
             Upcoming = await Upcoming.toArray();
             Completed = await Completed.toArray();
             Abandoned = await Abandoned.toArray();
-            res.render('Schedule_Log', { Recruiter_details, Upcoming, Completed, Abandoned, formattedDate });
+            res.render('Schedule_Log', { Recruiter_details:req.session.Recruiter_details, Upcoming, Completed, Abandoned, formattedDate });
         }
         else {
             res.redirect('/');
@@ -914,7 +904,7 @@ app.post('/delete_invitation', async (req, res) => {
             Notifications: {
               NID: NID,
               Created_On: current_time,
-              Created_By: Recruiter_details.Name,
+              Created_By: req.session.Recruiter_details.Name,
               Category:'cancel',
               Description: "Have cancelled the interview check your mail for more details !"
             }
@@ -953,10 +943,10 @@ app.post('/delete_invitation', async (req, res) => {
         <p> We are regretting for your inconvenience, feel free to contact the recruiter for more details. </p>
         <br><br><br>
         <p> Best Regards,</p>
-        <p> ${Recruiter_details.Name} </p>
-        <p> ${Recruiter_details.Role} </p>
-        <p> ${Recruiter_details.Company} </p>
-        <P> Contact Recruiter: ${Recruiter_details.Email}</p>
+        <p> ${req.session.Recruiter_details.Name} </p>
+        <p> ${req.session.Recruiter_details.Role} </p>
+        <p> ${req.session.Recruiter_details.Company} </p>
+        <P> Contact Recruiter: ${req.session.Recruiter_details.Email}</p>
         <small>The information contained in this electronic message and any attachments to this message are intended for the exclusive use of the addressee(s) and may contain proprietary, confidential or privileged information. If you are not the intended recipient, you should not disseminate, distribute, or copy this e-mail. Please notify the sender immediately and destroy all copies of this message and any attachments. WARNING: The recipient of this email should scan this email and all its attachments. Though we are secure, emails can be intercepted, lost, destroyed, corrupted, contain viruses, or arrive late or incomplete. The sender does not accept liability for any errors or omissions in the contents of this message, which arise because of the email transmission. </small>
         `;
 
@@ -1004,13 +994,11 @@ app.post('/delete_invitation', async (req, res) => {
 });
 
 //route for interviewsession
-var Entering_ILink = "";
-var Entering_IID = "";
 app.post('/Handle_Entrance', (req, res) => {
 
     var { IID, ILink } = req.body;
-    Entering_IID = IID;
-    Entering_ILink = ILink;
+    req.session.Entering_IID = IID;
+    req.session.Entering_ILink = ILink;
     res.redirect('/InterviewSession');
 
 });
@@ -1025,12 +1013,12 @@ app.get('/InterviewSession', async (req, res) => {
             await client.connect();
 
             const collection = db.collection("InterviewLog");
-            const cursor = await collection.findOne({ InterviewID: Entering_IID });
+            const cursor = await collection.findOne({ InterviewID: req.session.Entering_IID });
 
-            if (!Entering_IID || !Entering_ILink) // Checking if Entering_IID or Entering_ILink is empty or undefined
+            if (!req.session.Entering_IID || !req.session.Entering_ILink) // Checking if req.session.Entering_IID or req.session.Entering_ILink is empty or undefined
                 res.redirect('/Schedule_Log');
             else
-                res.render('InterviewSession', { Entering_IID, Entering_ILink, cursor });
+                res.render('InterviewSession', { Entering_IID:req.session.Entering_IID, Entering_ILink:req.session.Entering_ILink, cursor });
 
             // Close the connection (moved outside the try block to ensure it's always executed)
             await client.close();
@@ -1064,10 +1052,10 @@ app.post('/save-data', async (req, res) => {
         // console.log(data);
 
         // Insert the data into the collection
-        const prev_result = await collection.findOne({ InterviewID: Entering_IID},{Interview_Response:1})
+        const prev_result = await collection.findOne({ InterviewID: req.session.Entering_IID},{Interview_Response:1})
         if(data!="")
         {
-            const result = await collection.updateOne({ InterviewID: Entering_IID }, { $set: { Interview_Response: data } });
+            const result = await collection.updateOne({ InterviewID: req.session.Entering_IID }, { $set: { Interview_Response: data } });
         }
 
         // Close the connection
@@ -1416,7 +1404,7 @@ app.post('/Final_Result', async (req,res)=>{
             Notifications: {
               NID: NID,
               Created_On: current_time,
-              Created_By: Recruiter_details.Name,
+              Created_By: req.session.Recruiter_details.Name,
               Category:'results',
               Description: "Once of your interview results are being out now ! "
             }
