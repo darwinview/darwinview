@@ -1333,7 +1333,7 @@ if __name__ == "__main__":
             
     }
         
-        setTimeout(FitnessScore, 5000);
+        setTimeout(FitnessScore, 10000);
 
 
         function GrowthScore() {
@@ -1342,7 +1342,7 @@ if __name__ == "__main__":
             console.log(confidence_rate,communication_rate,relevance_rate,growth_rate)
                 
         }
-        setTimeout(GrowthScore, 9000);
+        setTimeout(GrowthScore, 20000);
 
         async function InsertData(){
 
@@ -1369,7 +1369,7 @@ if __name__ == "__main__":
         
             }
         }
-        setTimeout(InsertData, 15000)
+        setTimeout(InsertData, 25000)
 
 
 });
