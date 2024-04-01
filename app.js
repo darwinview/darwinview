@@ -1100,7 +1100,7 @@ app.post('/Evaluate_Result', async (req, res) => {
         JD = result.Job_Description
 
         // Close the connection
-        await client.close();setTimeout(async ()=>{await client.close();},60000);
+        await client.close();setTimeout(async ()=>{await client.close();},3000);
         
     } catch (error) {
 
@@ -1233,7 +1233,7 @@ if __name__ == "__main__":
                     console.error(`Error executing Python script: ${error}`);
                     return;
                 }
-                fitness_rate  = parseInt(stdout,10)
+                fitness_rate  = stdout
                 console.log(`Fitness Rate: ${stdout}`);
             });
 
@@ -1333,7 +1333,7 @@ if __name__ == "__main__":
             
     }
         
-        setTimeout(FitnessScore, 10000);
+        setTimeout(FitnessScore, 5000);
 
 
         function GrowthScore() {
@@ -1342,7 +1342,7 @@ if __name__ == "__main__":
             console.log(confidence_rate,communication_rate,relevance_rate,growth_rate)
                 
         }
-        setTimeout(GrowthScore, 50000);
+        setTimeout(GrowthScore, 9000);
 
         async function InsertData(){
 
@@ -1369,7 +1369,7 @@ if __name__ == "__main__":
         
             }
         }
-        setTimeout(InsertData, 54000)
+        setTimeout(InsertData, 15000)
 
 
 });
