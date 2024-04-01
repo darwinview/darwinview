@@ -55,8 +55,7 @@ app.use(bodyParser.json());
 
 app.post('/run-python', async (req, res) => {
     try {
-
-        const serializedData = JSON.stringify(req.body.data); // Assuming data is already in JSON format
+        const serializedData = JSON.stringify(req.body.data);
         console.log("Data received from user", serializedData);
         
         const pythonCode = `
@@ -94,26 +93,31 @@ ans = ans[st:end]
 print(ans)
 `;
         
-        // Execute Python code using exec
-        const pythonProcess = exec(`echo '${serializedData}' | python3 -c '${pythonCode}'`, (error, stdout, stderr) => {
-            if (error) {
-                console.error(`Error: ${error.message}`);
-                return;
-            }
-            if (stderr) {
-                console.error(`stderr: ${stderr}`);
-                return;
-            }
-            console.log(`Python output: ${stdout}`);
-            res.json({ output: stdout });
-        });
-        
+        // Execute Python code using spawn
+        const pythonProcess = spawn('python3', ['-c', pythonCode]);
+        pythonProcess.stdin.write(serializedData);
+        pythonProcess.stdin.end();
 
+        let output = '';
+
+        pythonProcess.stdout.on('data', (data) => {
+            output += data.toString();
+        });
+
+        pythonProcess.stderr.on('data', (data) => {
+            console.error(`stderr: ${data}`);
+        });
+
+        pythonProcess.on('close', (code) => {
+            console.log(`child process exited with code ${code}`);
+            res.json({ output });
+        });
     } catch (error) {
         console.error("Error:", error);
         res.status(500).json({ error: `Error: ${error.message}` });
     }
 });
+
 
 
 //-------------------------------------------------------------------------------
