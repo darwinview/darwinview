@@ -1152,7 +1152,7 @@ if __name__ == "__main__":
     calculate_confidence_rate(serialized_data)
 `.trim(); // Remove leading/trailing whitespace
 
-
+var growth_rate = 0;
     //-------------------------------- Confidence Rate Calculation -----------------------------------------------
 
     // Serialize the data to JSON
@@ -1166,6 +1166,8 @@ if __name__ == "__main__":
             return;
         }
         confidence_rate = parseInt(stdout,10)
+        growth_rate += Math.floor(confidence_rate/3)
+
         console.log(`Output from Python script: ${stdout}`);
     });
 
@@ -1188,6 +1190,7 @@ if __name__ == "__main__":
             return;
         }
         relevance_rate = parseInt(stdout,10)
+        growth_rate += Math.floor(relevance_rate/3)
         console.log(`Relavance Rate: ${stdout}`);
     });
 
@@ -1210,6 +1213,7 @@ if __name__ == "__main__":
             return;
         }
         communication_rate = parseInt(stdout,10)
+        growth_rate += Math.floor(communication_rate/3)
         console.log(`Communicatioanl Rate: ${stdout}`);
     });
 
@@ -1333,16 +1337,8 @@ if __name__ == "__main__":
             
     }
         
-        setTimeout(FitnessScore, 5000);
+        setTimeout(FitnessScore, 3000);
 
-
-        function GrowthScore() {
-
-            growth_rate = Math.floor((confidence_rate + relevance_rate + communication_rate)/3)
-            console.log(confidence_rate,communication_rate,relevance_rate,growth_rate)
-                
-        }
-        setTimeout(GrowthScore, 9000);
 
         async function InsertData(){
 
