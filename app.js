@@ -1337,7 +1337,7 @@ var growth_rate = 0;
             
     }
         
-        setTimeout(FitnessScore, 3000);
+        setTimeout(FitnessScore, 1000);
 
 
         async function InsertData(){
@@ -1365,7 +1365,7 @@ var growth_rate = 0;
         
             }
         }
-        setTimeout(InsertData, 15000)
+        setTimeout(InsertData, 40000)
 
 
 });
