@@ -1237,7 +1237,7 @@ var growth_rate = 0;
                     console.error(`Error executing Python script: ${error}`);
                     return;
                 }
-                fitness_rate  = stdout
+                fitness_rate  = parseInt(stdout,10)
                 console.log(`Fitness Rate: ${stdout}`);
             });
 
