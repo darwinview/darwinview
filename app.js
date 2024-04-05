@@ -1351,7 +1351,7 @@ var growth_rate = 0;
         
                 // Insert the data into the collection
                 const result = await collection.updateOne({ InterviewID: response_IID },{$set:{PreResult:{Confidence:confidence_rate,Relevance:relevance_rate,Communication:communication_rate,Growth:growth_rate,Fitness:fitness_rate,AIFeedback:AI_feedback,AIRecommendation:{Technologies:recommended_technologies,Framework:recommended_frameworks,Topics:recommended_topics}}}})
-        
+                console.log("Inserting Data")
                 // Close the connection
                 await client.close();
                 res.redirect('/Schedule_log')
