@@ -1,4 +1,4 @@
-# Darwin-View
+# Darwinview
 `Darwin-View` is an Intelligent Interview System(IIS) which enables a high-end 1:1 interview expereince in the assessments.     
 >More formally even if recruiter make a mistake of wrong hire but AI won't.
 
@@ -42,7 +42,7 @@ graph TD;
 > [!TIP]
 > If you want to take a look at full picture of online recruitemt process, Visit Here https://bit.ly/DarwinBox_Assessments.
 
-<summary>Sailent Features of Darwin-View</summary>  
+<summary>Sailent Features of Darwinview</summary>  
 </br>  
 
 - [X] Creates Assessment Platform for 1:1 Interview Session.  
