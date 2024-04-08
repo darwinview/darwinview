@@ -67,7 +67,7 @@ data_received = json.loads(sys.stdin.readline())
 
 client = AzureOpenAI(
     azure_endpoint="https://skill-ont.openai.azure.com/",
-    api_key="1676a0813fa646f8af1b1badf8bb2b47",
+    api_key="API_KEY",
     api_version="2024-02-15-preview"
 )
 
@@ -1126,7 +1126,7 @@ def calculate_confidence_rate(serialized_data):
     data_received = json.loads(serialized_data)
     client = AzureOpenAI(
         azure_endpoint="https://skill-ont.openai.azure.com/",
-        api_key="1676a0813fa646f8af1b1badf8bb2b47",
+        api_key="API_KEY",
         api_version="2024-02-15-preview"
     )
     message_text = [{"role": "system", "content": data_received}]
