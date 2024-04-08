@@ -46,8 +46,8 @@ graph TD;
 </br>  
 
 - [X] Creates Assessment Platform for 1:1 Interview Session.  
-- [ ] Extract speech from candidate  which are answered, Extract speech from recruiter as well and outputs the answer relevance rate for total interview from the candidate data.  
-- [ ] Includes candidate confidence rate, average answer speed, correctness, test statistics etc.
-- [ ] Recommends the improvements/skill to work on from interview to candidate.
-- [ ] Recommend topics to the recruiter that have to be cover in the interview based on role.
+- [X] Extract speech from candidate  which are answered, Extract speech from recruiter as well and outputs the answer relevance rate for total interview from the candidate data.  
+- [X] Includes candidate confidence rate, average answer speed, correctness, test statistics etc.
+- [X] Recommends the improvements/skill to work on from interview to candidate.
+- [X] Recommend topics to the recruiter that have to be cover in the interview based on role.
 
